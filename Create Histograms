@@ -1,0 +1,49 @@
+#Load packages.
+library(ggplot2)
+
+#Load the results dataset.
+load(file = "*Path to Data from Create Race Results*")
+
+#Restrict to the correct race and years.
+df_sub <- subset(df, df$Rank <= 3 & df$Year >= 1960 & df$Year <= 2020)
+
+#Format the names of the races.
+df_sub$Race <- ifelse(df_sub$Race == "tour-de-france", "Tour de France", df_sub$Race)
+df_sub$Race <- ifelse(df_sub$Race == "giro-d-italia", "Giro d'Italia", df_sub$Race)
+df_sub$Race <- ifelse(df_sub$Race == "vuelta-a-espana", "Vuelta a Espana", df_sub$Race)
+df_sub$Race <- ifelse(df_sub$Race == "world-championship", "World Championship", df_sub$Race)
+df_sub$Race <- ifelse(df_sub$Race == "paris-roubaix", "Paris-Roubaix", df_sub$Race)
+df_sub$Race <- ifelse(df_sub$Race == "ronde-van-vlaanderen", "Ronde van Vlaanderen", df_sub$Race)
+df_sub$Race <- ifelse(df_sub$Race == "liege-bastogne-liege", "Liege-Bastogne-Liege", df_sub$Race)
+df_sub$Race <- ifelse(df_sub$Race == "milano-sanremo", "Milano-Sanremo", df_sub$Race)
+df_sub$Race <- ifelse(df_sub$Race == "il-lombardia", "Giro di Lombardia", df_sub$Race)
+df_sub$Race <- factor(df_sub$Race, levels=c("Tour de France","Giro d'Italia","Vuelta a Espana",
+                                            "Paris-Roubaix", "Ronde van Vlaanderen", "Liege-Bastogne-Liege",
+                                            "Milano-Sanremo", "Giro di Lombardia", "World Championship"))
+
+#Create the mean line dataset.
+df_mean <- aggregate(df_sub$Age, list(df_sub$Race), mean)
+names(df_mean)[names(df_mean) == "Group.1"] <- "Race"
+names(df_mean)[names(df_mean) == "x"] <- "Mean"
+
+#Create the chart. 
+ggplot(df_sub, aes(x = Age, group = Race, fill = Race)) + 
+  facet_wrap(~ Race) +
+  geom_histogram(bins = 22, color = "black", alpha = 0.5) + 
+  geom_vline(data = df_mean, aes(xintercept = Mean), linetype="dashed") +
+  scale_fill_manual(values = c("gold1", "pink", "red", "snow4", "tan4", "darkgreen", "darkred", "orange2", "dodgerblue")) + 
+  ggtitle("Age Distribution of Top 3 By Race (1960-2020)") +
+  xlab("Distribution of Age") + 
+  ylab("Count") + 
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.background = element_blank(),
+        axis.title.x = element_text(size = 8, color = "black", family = "serif"),
+        axis.title.y = element_text(size = 8, color = "black", family = "serif"),
+        axis.text.y = element_text(size = 8, color = "black", family = "serif"),
+        axis.text.x = element_text(size = 8, color = "black", family = "serif"),
+        strip.text.x = element_text(size = 8, color = "black", family = "serif"),
+        plot.title = element_text(size = 8, color = "black", face = "italic", family = "serif"))
+ggsave("Age Distribution by Race.pdf")
